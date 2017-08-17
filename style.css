@@ -1,0 +1,23 @@
+p.line-tokenized {
+    font-size: 36px;
+}
+
+input[type="number"] {
+    width: 50px;
+}
+
+div.debug {
+    margin-top: 50px;
+    text-size: 11px;
+    text-color: gray;
+}
+
+.glyphicon-ok {
+    text-size: 80%;
+    color: green;
+}
+
+.glyphicon-remove {
+    text-size: 80%;
+    color: red;
+}
