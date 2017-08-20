@@ -10587,13 +10587,21 @@ var _user$project$Haiku$maybeSum = F2(
 			a,
 			b);
 	});
+var _user$project$Haiku$inputSyllableValue = function (syl) {
+	var _p2 = syl;
+	if (_p2.ctor === 'Just') {
+		return _elm_lang$core$Basics$toString(_p2._0);
+	} else {
+		return '';
+	}
+};
 var _user$project$Haiku$syllablesForTerm = F2(
 	function (model, term) {
 		return A2(_elm_lang$core$Dict$get, term, model.syllables);
 	});
 var _user$project$Haiku$syllableCountForTokens = F2(
 	function (model, terms) {
-		return A3(
+		return _elm_lang$core$List$isEmpty(terms) ? _elm_lang$core$Maybe$Nothing : A3(
 			_elm_lang$core$List$foldl,
 			_user$project$Haiku$maybeSum,
 			_elm_lang$core$Maybe$Just(0),
@@ -10612,23 +10620,48 @@ var _user$project$Haiku$viewLineStatus = F2(
 		var terms = line.terms;
 		var syllables = A2(_user$project$Haiku$syllableCountForTokens, model, terms);
 		var target = line.syllables;
-		return _elm_lang$core$Native_Utils.eq(
-			syllables,
-			_elm_lang$core$Maybe$Just(target)) ? A2(
-			_elm_lang$html$Html$span,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class('glyphicon glyphicon-ok'),
-				_1: {ctor: '[]'}
-			},
-			{ctor: '[]'}) : A2(
-			_elm_lang$html$Html$span,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class('glyphicon glyphicon-remove'),
-				_1: {ctor: '[]'}
-			},
-			{ctor: '[]'});
+		var _p3 = syllables;
+		if (_p3.ctor === 'Just') {
+			var _p4 = _p3._0;
+			return _elm_lang$core$Native_Utils.eq(_p4, target) ? A2(
+				_elm_lang$html$Html$span,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('haiku-status-good'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(
+						_elm_lang$core$Basics$toString(_p4)),
+					_1: {ctor: '[]'}
+				}) : A2(
+				_elm_lang$html$Html$span,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('haiku-status-bad'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(
+						_elm_lang$core$Basics$toString(_p4)),
+					_1: {ctor: '[]'}
+				});
+		} else {
+			return A2(
+				_elm_lang$html$Html$span,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('haiku-status-unknown'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('?'),
+					_1: {ctor: '[]'}
+				});
+		}
 	});
 var _user$project$Haiku$normalizeTerm = function (term) {
 	return A2(
@@ -10638,8 +10671,8 @@ var _user$project$Haiku$normalizeTerm = function (term) {
 };
 var _user$project$Haiku$setHaikuLine = F3(
 	function (haiku, lineNum, newLine) {
-		var _p2 = lineNum;
-		switch (_p2) {
+		var _p5 = lineNum;
+		switch (_p5) {
 			case 0:
 				return _elm_lang$core$Native_Utils.update(
 					haiku,
@@ -10666,50 +10699,11 @@ var _user$project$Haiku$fetchSyllableCounts = F2(
 				url,
 				_elm_lang$core$Json_Decode$dict(_elm_lang$core$Json_Decode$int)));
 	});
-var _user$project$Haiku$dictUrl = './terms.json';
-var _user$project$Haiku$Term = F2(
-	function (a, b) {
-		return {term: a, normalized: b};
-	});
-var _user$project$Haiku$makeTerm = F2(
-	function (model, text) {
-		return A2(
-			_user$project$Haiku$Term,
-			text,
-			_user$project$Haiku$normalizeTerm(text));
-	});
-var _user$project$Haiku$tokenizeLine = F2(
-	function (model, line) {
-		var words = A3(
-			_elm_lang$core$Regex$split,
-			_elm_lang$core$Regex$All,
-			_elm_lang$core$Regex$regex('[- ]+'),
-			line);
-		return A2(
-			_elm_lang$core$List$map,
-			_user$project$Haiku$makeTerm(model),
-			words);
-	});
-var _user$project$Haiku$Line = F5(
-	function (a, b, c, d, e) {
-		return {text: a, textInput: b, terms: c, syllables: d, lineState: e};
-	});
-var _user$project$Haiku$Haiku = F3(
-	function (a, b, c) {
-		return {line0: a, line1: b, line2: c};
-	});
-var _user$project$Haiku$Model = F3(
-	function (a, b, c) {
-		return {haiku: a, syllables: b, alertMessage: c};
-	});
-var _user$project$Haiku$Tokenized = {ctor: 'Tokenized'};
-var _user$project$Haiku$EnterText = {ctor: 'EnterText'};
 var _user$project$Haiku$initialLine = {
 	text: '',
 	textInput: '',
 	terms: {ctor: '[]'},
-	syllables: 0,
-	lineState: _user$project$Haiku$EnterText
+	syllables: 0
 };
 var _user$project$Haiku$initialHaiku = {
 	line0: _elm_lang$core$Native_Utils.update(
@@ -10750,8 +10744,8 @@ var _user$project$Haiku$initialModel = {
 };
 var _user$project$Haiku$getHaikuLine = F2(
 	function (haiku, lineNum) {
-		var _p3 = lineNum;
-		switch (_p3) {
+		var _p6 = lineNum;
+		switch (_p6) {
 			case 0:
 				return haiku.line0;
 			case 1:
@@ -10761,46 +10755,6 @@ var _user$project$Haiku$getHaikuLine = F2(
 			default:
 				return _user$project$Haiku$initialLine;
 		}
-	});
-var _user$project$Haiku$saveLineText = F2(
-	function (model, lineNum) {
-		var haiku = model.haiku;
-		var inLine = A2(_user$project$Haiku$getHaikuLine, haiku, lineNum);
-		var tokenized = A2(_user$project$Haiku$tokenizeLine, model, inLine.textInput);
-		var outLine = _elm_lang$core$Native_Utils.update(
-			inLine,
-			{text: inLine.textInput, terms: tokenized, lineState: _user$project$Haiku$Tokenized});
-		return _elm_lang$core$Native_Utils.update(
-			model,
-			{
-				haiku: A3(_user$project$Haiku$setHaikuLine, haiku, lineNum, outLine)
-			});
-	});
-var _user$project$Haiku$saveTempLineText = F3(
-	function (model, lineNum, text) {
-		var haiku = model.haiku;
-		var inLine = A2(_user$project$Haiku$getHaikuLine, haiku, lineNum);
-		var outLine = _elm_lang$core$Native_Utils.update(
-			inLine,
-			{textInput: text});
-		return _elm_lang$core$Native_Utils.update(
-			model,
-			{
-				haiku: A3(_user$project$Haiku$setHaikuLine, haiku, lineNum, outLine)
-			});
-	});
-var _user$project$Haiku$cancelTempLineText = F2(
-	function (model, lineNum) {
-		var haiku = model.haiku;
-		var inLine = A2(_user$project$Haiku$getHaikuLine, haiku, lineNum);
-		var outLine = _elm_lang$core$Native_Utils.update(
-			inLine,
-			{textInput: '', lineState: _user$project$Haiku$Tokenized});
-		return _elm_lang$core$Native_Utils.update(
-			model,
-			{
-				haiku: A3(_user$project$Haiku$setHaikuLine, haiku, lineNum, outLine)
-			});
 	});
 var _user$project$Haiku$normalizedTermsForLine = F2(
 	function (model, lineNum) {
@@ -10830,8 +10784,9 @@ var _user$project$Haiku$normalizedTerms = function (model) {
 		});
 };
 var _user$project$Haiku$uniqueTerms = function (model) {
-	return _elm_community$list_extra$List_Extra$unique(
-		_user$project$Haiku$normalizedTerms(model));
+	return _elm_lang$core$List$sort(
+		_elm_community$list_extra$List_Extra$unique(
+			_user$project$Haiku$normalizedTerms(model)));
 };
 var _user$project$Haiku$missingTerms = function (model) {
 	var isUnmapped = F2(
@@ -10845,13 +10800,44 @@ var _user$project$Haiku$missingTerms = function (model) {
 		isUnmapped(model),
 		_user$project$Haiku$uniqueTerms(model));
 };
-var _user$project$Haiku$setEditLine = F2(
-	function (model, lineNum) {
+var _user$project$Haiku$dictUrl = './terms.json';
+var _user$project$Haiku$Term = F2(
+	function (a, b) {
+		return {term: a, normalized: b};
+	});
+var _user$project$Haiku$makeTerm = F2(
+	function (model, text) {
+		return A2(
+			_user$project$Haiku$Term,
+			text,
+			_user$project$Haiku$normalizeTerm(text));
+	});
+var _user$project$Haiku$tokenizeLine = F2(
+	function (model, line) {
+		var nonEmpty = function (x) {
+			return !_elm_lang$core$String$isEmpty(x);
+		};
+		var words = A2(
+			_elm_lang$core$List$filter,
+			nonEmpty,
+			A3(
+				_elm_lang$core$Regex$split,
+				_elm_lang$core$Regex$All,
+				_elm_lang$core$Regex$regex('[- ]+'),
+				line));
+		return A2(
+			_elm_lang$core$List$map,
+			_user$project$Haiku$makeTerm(model),
+			words);
+	});
+var _user$project$Haiku$saveLineText = F3(
+	function (model, lineNum, lineText) {
+		var tokenized = A2(_user$project$Haiku$tokenizeLine, model, lineText);
 		var haiku = model.haiku;
 		var inLine = A2(_user$project$Haiku$getHaikuLine, haiku, lineNum);
 		var outLine = _elm_lang$core$Native_Utils.update(
 			inLine,
-			{textInput: '', lineState: _user$project$Haiku$EnterText});
+			{text: lineText, terms: tokenized});
 		return _elm_lang$core$Native_Utils.update(
 			model,
 			{
@@ -10860,8 +10846,8 @@ var _user$project$Haiku$setEditLine = F2(
 	});
 var _user$project$Haiku$update = F2(
 	function (msg, model) {
-		var _p4 = msg;
-		switch (_p4.ctor) {
+		var _p7 = msg;
+		switch (_p7.ctor) {
 			case 'CloseAlert':
 				return {
 					ctor: '_Tuple2',
@@ -10879,12 +10865,12 @@ var _user$project$Haiku$update = F2(
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'LoadTerms':
-				if (_p4._0.ctor === 'Ok') {
+				if (_p7._0.ctor === 'Ok') {
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{syllables: _p4._0._0}),
+							{syllables: _p7._0._0}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				} else {
@@ -10894,14 +10880,14 @@ var _user$project$Haiku$update = F2(
 							model,
 							{
 								alertMessage: _elm_lang$core$Maybe$Just(
-									_user$project$Haiku$httpErrorToMessage(_p4._0._0))
+									_user$project$Haiku$httpErrorToMessage(_p7._0._0))
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				}
 			case 'SetSyllableCount':
-				var _p5 = _elm_lang$core$String$toInt(_p4._1);
-				if (_p5.ctor === 'Err') {
+				var _p8 = _elm_lang$core$String$toInt(_p7._1);
+				if (_p8.ctor === 'Err') {
 					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 				} else {
 					return {
@@ -10909,7 +10895,7 @@ var _user$project$Haiku$update = F2(
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								syllables: A3(_elm_lang$core$Dict$insert, _p4._0, _p5._0, model.syllables)
+								syllables: A3(_elm_lang$core$Dict$insert, _p7._0, _p8._0, model.syllables)
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
@@ -10920,217 +10906,102 @@ var _user$project$Haiku$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							syllables: A2(_elm_lang$core$Dict$remove, _p4._0, model.syllables)
+							syllables: A2(_elm_lang$core$Dict$remove, _p7._0, model.syllables)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
-			case 'EditLine':
+			case 'EnterLineText':
 				return {
 					ctor: '_Tuple2',
-					_0: A2(_user$project$Haiku$setEditLine, model, _p4._0),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'SaveLineText':
-				return {
-					ctor: '_Tuple2',
-					_0: A2(_user$project$Haiku$saveLineText, model, _p4._0),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'CancelLineText':
-				return {
-					ctor: '_Tuple2',
-					_0: A2(_user$project$Haiku$cancelTempLineText, model, _p4._0),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'EnterTempLineText':
-				return {
-					ctor: '_Tuple2',
-					_0: A3(_user$project$Haiku$saveTempLineText, model, _p4._0, _p4._1),
+					_0: A3(_user$project$Haiku$saveLineText, model, _p7._0, _p7._1),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 		}
 	});
+var _user$project$Haiku$Line = F4(
+	function (a, b, c, d) {
+		return {text: a, textInput: b, terms: c, syllables: d};
+	});
+var _user$project$Haiku$Haiku = F3(
+	function (a, b, c) {
+		return {line0: a, line1: b, line2: c};
+	});
+var _user$project$Haiku$Model = F3(
+	function (a, b, c) {
+		return {haiku: a, syllables: b, alertMessage: c};
+	});
 var _user$project$Haiku$SetTermSyllables = {ctor: 'SetTermSyllables'};
 var _user$project$Haiku$CloseAlert = {ctor: 'CloseAlert'};
-var _user$project$Haiku$CancelLineText = function (a) {
-	return {ctor: 'CancelLineText', _0: a};
-};
-var _user$project$Haiku$SaveLineText = function (a) {
-	return {ctor: 'SaveLineText', _0: a};
-};
-var _user$project$Haiku$EnterTempLineText = F2(
+var _user$project$Haiku$EnterLineText = F2(
 	function (a, b) {
-		return {ctor: 'EnterTempLineText', _0: a, _1: b};
-	});
-var _user$project$Haiku$EditLine = function (a) {
-	return {ctor: 'EditLine', _0: a};
-};
-var _user$project$Haiku$ClearSyllableCount = function (a) {
-	return {ctor: 'ClearSyllableCount', _0: a};
-};
-var _user$project$Haiku$viewLineTerm = F2(
-	function (model, term) {
-		var syllables = A2(_user$project$Haiku$syllablesForTerm, model, term.normalized);
-		var syllableSup = function () {
-			var _p6 = syllables;
-			if (_p6.ctor === 'Just') {
-				return A2(
-					_elm_lang$html$Html$a,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$href('#'),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$html$Html_Events$onClick(
-								_user$project$Haiku$ClearSyllableCount(term.normalized)),
-							_1: {ctor: '[]'}
-						}
-					},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text(
-							_elm_lang$core$Basics$toString(_p6._0)),
-						_1: {ctor: '[]'}
-					});
-			} else {
-				return _elm_lang$html$Html$text('?');
-			}
-		}();
-		return A2(
-			_elm_lang$html$Html$span,
-			{ctor: '[]'},
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html$text(term.term),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$sup,
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: syllableSup,
-							_1: {ctor: '[]'}
-						}),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html$text(' '),
-						_1: {ctor: '[]'}
-					}
-				}
-			});
-	});
-var _user$project$Haiku$viewLineTerms = F2(
-	function (model, line) {
-		var terms = line.terms;
-		return A2(
-			_elm_lang$html$Html$span,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class('terms'),
-				_1: {ctor: '[]'}
-			},
-			A2(
-				_elm_lang$core$List$map,
-				_user$project$Haiku$viewLineTerm(model),
-				terms));
+		return {ctor: 'EnterLineText', _0: a, _1: b};
 	});
 var _user$project$Haiku$viewLine = F2(
 	function (model, lineNum) {
 		var haiku = model.haiku;
 		var line = A2(_user$project$Haiku$getHaikuLine, haiku, lineNum);
-		var _p7 = line.lineState;
-		if (_p7.ctor === 'EnterText') {
-			return A2(
-				_elm_lang$html$Html$p,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('line-input'),
-					_1: {ctor: '[]'}
-				},
-				{
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('input-group input-group-lg'),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$span,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('input-group-addon'),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: A2(_user$project$Haiku$viewLineStatus, model, line),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
 					ctor: '::',
 					_0: A2(
 						_elm_lang$html$Html$input,
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$type_('text'),
+							_0: _elm_lang$html$Html_Attributes$class('form-control'),
 							_1: {
 								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$placeholder('Enter a haiku line'),
+								_0: _elm_lang$html$Html_Attributes$type_('text'),
 								_1: {
 									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$value(line.textInput),
+									_0: _elm_lang$html$Html_Attributes$placeholder('Enter a haiku line'),
 									_1: {
 										ctor: '::',
-										_0: _elm_lang$html$Html_Events$onInput(
-											_user$project$Haiku$EnterTempLineText(lineNum)),
-										_1: {ctor: '[]'}
+										_0: _elm_lang$html$Html_Attributes$value(line.text),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Events$onInput(
+												_user$project$Haiku$EnterLineText(lineNum)),
+											_1: {ctor: '[]'}
+										}
 									}
 								}
 							}
 						},
 						{ctor: '[]'}),
-					_1: {
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$button,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Events$onClick(
-									_user$project$Haiku$SaveLineText(lineNum)),
-								_1: {ctor: '[]'}
-							},
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html$text('Save'),
-								_1: {ctor: '[]'}
-							}),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$button,
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html_Events$onClick(
-										_user$project$Haiku$CancelLineText(lineNum)),
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html$text('Cancel'),
-									_1: {ctor: '[]'}
-								}),
-							_1: {ctor: '[]'}
-						}
-					}
-				});
-		} else {
-			return A2(
-				_elm_lang$html$Html$p,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('line-tokenized'),
 					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: A2(_user$project$Haiku$viewLineStatus, model, line),
-					_1: {
-						ctor: '::',
-						_0: A2(_user$project$Haiku$viewLineTerms, model, line),
-						_1: {ctor: '[]'}
-					}
-				});
-		}
+				}
+			});
 	});
+var _user$project$Haiku$ClearSyllableCount = function (a) {
+	return {ctor: 'ClearSyllableCount', _0: a};
+};
 var _user$project$Haiku$SetSyllableCount = F2(
 	function (a, b) {
 		return {ctor: 'SetSyllableCount', _0: a, _1: b};
 	});
-var _user$project$Haiku$viewMissingTerms = function (model) {
+var _user$project$Haiku$viewTerms = function (model) {
 	var listItemize = function (term) {
 		return A2(
 			_elm_lang$html$Html$li,
@@ -11144,9 +11015,15 @@ var _user$project$Haiku$viewMissingTerms = function (model) {
 						_0: _elm_lang$html$Html_Attributes$type_('number'),
 						_1: {
 							ctor: '::',
-							_0: _elm_lang$html$Html_Events$onInput(
-								_user$project$Haiku$SetSyllableCount(term)),
-							_1: {ctor: '[]'}
+							_0: _elm_lang$html$Html_Attributes$value(
+								_user$project$Haiku$inputSyllableValue(
+									A2(_user$project$Haiku$syllablesForTerm, model, term))),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Events$onInput(
+									_user$project$Haiku$SetSyllableCount(term)),
+								_1: {ctor: '[]'}
+							}
 						}
 					},
 					{ctor: '[]'}),
@@ -11157,11 +11034,11 @@ var _user$project$Haiku$viewMissingTerms = function (model) {
 				}
 			});
 	};
-	var missing = _user$project$Haiku$missingTerms(model);
+	var terms = _user$project$Haiku$uniqueTerms(model);
 	return A2(
 		_elm_lang$html$Html$ul,
 		{ctor: '[]'},
-		A2(_elm_lang$core$List$map, listItemize, missing));
+		A2(_elm_lang$core$List$map, listItemize, terms));
 };
 var _user$project$Haiku$viewHaiku = function (model) {
 	return A2(
@@ -11199,12 +11076,12 @@ var _user$project$Haiku$viewHaiku = function (model) {
 					_elm_lang$html$Html$div,
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('col-md-4'),
+						_0: _elm_lang$html$Html_Attributes$class('col-md-4 terms'),
 						_1: {ctor: '[]'}
 					},
 					{
 						ctor: '::',
-						_0: _user$project$Haiku$viewMissingTerms(model),
+						_0: _user$project$Haiku$viewTerms(model),
 						_1: {ctor: '[]'}
 					}),
 				_1: {ctor: '[]'}
@@ -11228,7 +11105,23 @@ var _user$project$Haiku$view = function (model) {
 				_1: {
 					ctor: '::',
 					_0: _user$project$Haiku$viewHaiku(model),
-					_1: {ctor: '[]'}
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$div,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('debug'),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text(
+									_elm_lang$core$Basics$toString(model.haiku)),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
 				}
 			}
 		});
@@ -11242,7 +11135,7 @@ var _user$project$Haiku$main = _elm_lang$html$Html$program(
 		init: {ctor: '_Tuple2', _0: _user$project$Haiku$initialModel, _1: _user$project$Haiku$loadDict},
 		view: _user$project$Haiku$view,
 		update: _user$project$Haiku$update,
-		subscriptions: function (_p8) {
+		subscriptions: function (_p9) {
 			return _elm_lang$core$Platform_Sub$none;
 		}
 	})();

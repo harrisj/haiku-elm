@@ -1,4 +1,4 @@
-p.line-tokenized {
+p.line {
     font-size: 36px;
 }
 
@@ -12,12 +12,24 @@ div.debug {
     text-color: gray;
 }
 
-.glyphicon-ok {
-    text-size: 80%;
+.haiku-status-good {
     color: green;
+    font-weight: bold;
 }
 
-.glyphicon-remove {
-    text-size: 80%;
+.haiku-status-bad {
     color: red;
+    font-weight: bold;
+}
+
+div.input-group {
+    margin-top: 5px;
+}
+
+div.terms {
+    border-left: 1px dotted;
+}
+
+ul {
+    list-style-type: none;
 }
