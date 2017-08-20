@@ -3,13 +3,20 @@ module Haiku exposing (..)
 import Regex exposing (split, regex)
 import Char
 import Dict
+import Http
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import List.Extra exposing ( unique )
+import Json.Decode as Decode
 
 
 --- MODEL
+
+dictUrl : String
+dictUrl =
+    "./terms.json"
+
 
 type alias SyllableCounts =
     Dict.Dict String Int
@@ -72,10 +79,25 @@ initialModel =
     }
 
 
+--- COMMANDS
+
+fetchSyllableCounts : (Result Http.Error SyllableCounts -> msg) -> String -> Cmd msg
+fetchSyllableCounts msg url =
+    Decode.dict Decode.int
+        |> Http.get url
+        |> Http.send msg
+
+
+loadDict : Cmd Msg
+loadDict =
+    fetchSyllableCounts LoadTerms dictUrl
+
+
 --- UPDATE
 
 type Msg
     = NewHaiku
+    | LoadTerms (Result Http.Error (Dict.Dict String Int))
     | SetSyllableCount String String
     | ClearSyllableCount String
     | EditLine Int
@@ -94,6 +116,12 @@ update msg model =
 
         NewHaiku ->
             ( { model | haiku = initialHaiku }, Cmd.none )
+
+        LoadTerms (Ok terms) ->
+            ( { model | syllables = terms }, Cmd.none )
+
+        LoadTerms (Result.Err error) ->
+            ( { model | alertMessage = Just (httpErrorToMessage error) }, Cmd.none )
 
         SetSyllableCount term countStr ->
             case (String.toInt countStr) of
@@ -271,6 +299,20 @@ missingTerms model =
         |> uniqueTerms
         |> List.filter (isUnmapped model)
 
+
+httpErrorToMessage : Http.Error -> String
+httpErrorToMessage error =
+    case error of
+        Http.BadStatus response ->
+            (toString response.status)
+
+        Http.BadPayload message _ ->
+            "Decoding Failed: " ++ message
+
+        _ ->
+            (toString error)
+
+
 -- VIEW
 
 viewHeader : String -> Html Msg
@@ -400,17 +442,13 @@ view model =
         [ viewHeader "Haiku Maker"
         , viewAlert CloseAlert model.alertMessage
         , viewHaiku model
-        , div [ class "row debug" ] [
-               samp []
-                    [ text (toString model) ]
-              ]
         ]
 
 
 main : Program Never Model Msg
 main =
     Html.program
-        { init = ( initialModel, Cmd.none )
+        { init = ( initialModel, loadDict )
         , view = view
         , update = update
         , subscriptions = (\_ -> Sub.none)
