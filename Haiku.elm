@@ -7,11 +7,12 @@ import Http
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
-import List.Extra exposing ( unique )
+import List.Extra exposing (unique)
 import Json.Decode as Decode
 
 
 --- MODEL
+
 
 dictUrl : String
 dictUrl =
@@ -24,15 +25,16 @@ type alias SyllableCounts =
 
 type alias Term =
     { term : String
-    , normalized : String }
+    , normalized : String
+    }
 
 
 type alias Line =
-     { text : String
-     , textInput : String
-     , terms : List Term
-     , syllables: Int
-     }
+    { text : String
+    , textInput : String
+    , terms : List Term
+    , syllables : Int
+    }
 
 
 initialLine : Line
@@ -44,11 +46,14 @@ initialLine =
     }
 
 
+
 -- Just one line for now
+
+
 type alias Haiku =
     { line0 : Line
-    , line1: Line
-    , line2: Line
+    , line1 : Line
+    , line2 : Line
     }
 
 
@@ -59,9 +64,10 @@ initialHaiku =
     , line2 = { initialLine | syllables = 5 }
     }
 
+
 type alias Model =
-    { haiku: Haiku
-    , syllables: SyllableCounts
+    { haiku : Haiku
+    , syllables : SyllableCounts
     , alertMessage : Maybe String
     }
 
@@ -69,12 +75,14 @@ type alias Model =
 initialModel : Model
 initialModel =
     { haiku = initialHaiku
-    , syllables = Dict.fromList[("the", 1), ("rain", 1), ("falls", 1), ("down", 1), ("softly", 2)]
+    , syllables = Dict.fromList [ ( "the", 1 ), ( "rain", 1 ), ( "falls", 1 ), ( "down", 1 ), ( "softly", 2 ) ]
     , alertMessage = Nothing
     }
 
 
+
 --- COMMANDS
+
 
 fetchSyllableCounts : (Result Http.Error SyllableCounts -> msg) -> String -> Cmd msg
 fetchSyllableCounts msg url =
@@ -88,7 +96,9 @@ loadDict =
     fetchSyllableCounts LoadTerms dictUrl
 
 
+
 --- UPDATE
+
 
 type Msg
     = NewHaiku
@@ -133,35 +143,54 @@ update msg model =
             ( model, Cmd.none )
 
 
+
 -- ACTIONS
+
 
 getHaikuLine : Haiku -> Int -> Line
 getHaikuLine haiku lineNum =
     case lineNum of
-        0 -> haiku.line0
-        1 -> haiku.line1
-        2 -> haiku.line2
-        _ -> initialLine
+        0 ->
+            haiku.line0
+
+        1 ->
+            haiku.line1
+
+        2 ->
+            haiku.line2
+
+        _ ->
+            initialLine
 
 
 setHaikuLine : Haiku -> Int -> Line -> Haiku
 setHaikuLine haiku lineNum newLine =
     case lineNum of
-        0 -> { haiku | line0 = newLine }
-        1 -> { haiku | line1 = newLine }
-        2 -> { haiku | line2 = newLine }
-        _ -> haiku
+        0 ->
+            { haiku | line0 = newLine }
+
+        1 ->
+            { haiku | line1 = newLine }
+
+        2 ->
+            { haiku | line2 = newLine }
+
+        _ ->
+            haiku
 
 
-saveLineText: Model -> Int -> String -> Model
+saveLineText : Model -> Int -> String -> Model
 saveLineText model lineNum lineText =
     let
         haiku =
             model.haiku
+
         inLine =
             getHaikuLine haiku lineNum
+
         tokenized =
             tokenizeLine model lineText
+
         outLine =
             { inLine | text = lineText, terms = tokenized }
     in
@@ -171,8 +200,8 @@ saveLineText model lineNum lineText =
 normalizeTerm : String -> String
 normalizeTerm term =
     term
-    |> String.toLower
-    |> String.filter Char.isLower
+        |> String.toLower
+        |> String.filter Char.isLower
 
 
 syllablesForTerm : Model -> String -> Maybe Int
@@ -200,10 +229,10 @@ tokenizeLine model line =
     let
         nonEmpty x =
             not (String.isEmpty x)
+
         words =
             Regex.split Regex.All (regex "[- ]+") line
-            |> List.filter nonEmpty
-
+                |> List.filter nonEmpty
     in
         List.map (makeTerm model) words
 
@@ -219,9 +248,9 @@ syllableCountForTokens model terms =
         Nothing
     else
         terms
-        |> List.map .normalized
-        |> List.map (syllablesForTerm model)
-        |> List.foldl maybeSum (Just 0)
+            |> List.map .normalized
+            |> List.map (syllablesForTerm model)
+            |> List.foldl maybeSum (Just 0)
 
 
 normalizedTermsForLine : Model -> Int -> List String
@@ -229,25 +258,28 @@ normalizedTermsForLine model lineNum =
     let
         line =
             getHaikuLine model.haiku lineNum
+
         terms =
             line.terms
-     in
-         List.map .normalized terms
+    in
+        List.map .normalized terms
 
 
 normalizedTerms : Model -> List String
 normalizedTerms model =
-    List.concat [ normalizedTermsForLine model 0
-                , normalizedTermsForLine model 1
-                , normalizedTermsForLine model 2]
+    List.concat
+        [ normalizedTermsForLine model 0
+        , normalizedTermsForLine model 1
+        , normalizedTermsForLine model 2
+        ]
 
 
 uniqueTerms : Model -> List String
 uniqueTerms model =
     model
-    |> normalizedTerms
-    |> unique
-    |> List.sort
+        |> normalizedTerms
+        |> unique
+        |> List.sort
 
 
 missingTerms : Model -> List String
@@ -257,8 +289,8 @@ missingTerms model =
             (syllablesForTerm model term) == Nothing
     in
         model
-        |> uniqueTerms
-        |> List.filter (isUnmapped model)
+            |> uniqueTerms
+            |> List.filter (isUnmapped model)
 
 
 httpErrorToMessage : Http.Error -> String
@@ -274,7 +306,9 @@ httpErrorToMessage error =
             (toString error)
 
 
+
 -- VIEW
+
 
 viewHeader : String -> Html Msg
 viewHeader title =
@@ -284,34 +318,37 @@ viewHeader title =
 
 viewAlert : msg -> Maybe String -> Html msg
 viewAlert msg alertMessage =
-       case alertMessage of
-           Just message ->
-               div [ class "alert" ]
-                   [ span [ class "close", onClick msg ] [ text "X" ]
-                   , text message
-                   ]
-           Nothing  ->
-               text ""
+    case alertMessage of
+        Just message ->
+            div [ class "alert" ]
+                [ span [ class "close", onClick msg ] [ text "X" ]
+                , text message
+                ]
+
+        Nothing ->
+            text ""
+
 
 viewLine : Model -> Int -> Html Msg
 viewLine model lineNum =
     let
         haiku =
             model.haiku
+
         line =
             getHaikuLine haiku lineNum
     in
         div [ class "input-group input-group-lg" ]
             [ span [ class "input-group-addon" ]
-                   [ viewLineStatus model line ]
+                [ viewLineStatus model line ]
             , input
-                  [ class "form-control"
-                  , type_ "text"
-                  , placeholder "Enter a haiku line"
-                  , value line.text
-                  , onInput (EnterLineText lineNum)
-                  ]
-                  []
+                [ class "form-control"
+                , type_ "text"
+                , placeholder "Enter a haiku line"
+                , value line.text
+                , onInput (EnterLineText lineNum)
+                ]
+                []
             ]
 
 
@@ -320,8 +357,10 @@ viewLineStatus model line =
     let
         target =
             line.syllables
+
         terms =
             line.terms
+
         syllables =
             syllableCountForTokens model terms
     in
@@ -331,6 +370,7 @@ viewLineStatus model line =
                     span [ class "haiku-status-good" ] [ text (toString count) ]
                 else
                     span [ class "haiku-status-bad" ] [ text (toString count) ]
+
             Nothing ->
                 span [ class "haiku-status-unknown" ] [ text "?" ]
 
@@ -338,14 +378,13 @@ viewLineStatus model line =
 viewHaiku : Model -> Html Msg
 viewHaiku model =
     div [ class "row" ]
-        [
-          div [ class "col-md-8" ]
-              [ viewLine model 0
-              , viewLine model 1
-              , viewLine model 2
-              ]
+        [ div [ class "col-md-8" ]
+            [ viewLine model 0
+            , viewLine model 1
+            , viewLine model 2
+            ]
         , div [ class "col-md-4 terms" ]
-              [ viewTerms model ]
+            [ viewTerms model ]
         ]
 
 
@@ -354,11 +393,15 @@ viewTerms model =
     let
         terms =
             uniqueTerms model
+
         listItemize term =
-            li [ ]
-                [ input [ type_ "number"
-                        , value (inputSyllableValue (syllablesForTerm model term))
-                        , onInput (SetSyllableCount term) ] []
+            li []
+                [ input
+                    [ type_ "number"
+                    , value (inputSyllableValue (syllablesForTerm model term))
+                    , onInput (SetSyllableCount term)
+                    ]
+                    []
                 , text term
                 ]
     in
@@ -372,7 +415,7 @@ view model =
         , viewAlert CloseAlert model.alertMessage
         , viewHaiku model
         , div [ class "debug" ]
-              [ text (toString model.haiku) ]
+            [ text (toString model.haiku) ]
         ]
 
 
